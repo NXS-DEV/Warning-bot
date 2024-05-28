@@ -1,2 +1,2 @@
 # Warning-bot
-This is a moderation bots with everything you need for your discord server.
+This is a moderation bot with everything you need for your discord server.
