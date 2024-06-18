@@ -763,6 +763,112 @@ async def reboot(ctx: commands.Context):
         print("SysInfo: The member doesn't have permission to execute this command.")
 
 
+# commande de désactivation du bot (Utilisation restreinte)
+@client.hybrid_command(description="shutting down the bot")
+async def shutdown(ctx: commands.Context):
+    # Checking if the user has admin permissions
+    if ctx.author.guild_permissions.administrator:
+        await ctx.send("Shutting down the bot... Goodbye!")
+        await client.close()
+    else:
+        print(f'SysError: {ctx.author} doesnt have enough permissions.')
+        await ctx.send(f"{ctx.author.mention}, you need to be an ADMIN to use this command.")
+
+# ID du rôle requis pour démarrer un giveaway
+REQUIRED_ROLE_ID = 12345  # Remplace par l'ID du membre
+# Stockage des messages de giveaway
+giveaway_messages = {}
+
+# Commande pour démarrer un giveaway
+@client.hybrid_command(description="start a giveaway")
+async def start_giveaways(ctx: commands.Context):
+    # Vérification du rôle
+    role = discord.utils.get(ctx.guild.roles, id=REQUIRED_ROLE_ID)
+    if role not in ctx.author.roles:
+        await ctx.send("You don't have the required role to start a giveaway.")
+        return
+
+    # Fonction de vérification de l'auteur
+    def check_author(m):
+        return m.author == ctx.author
+
+    await ctx.send("Please enter the reward for the giveaway:")
+    reward_message = await client.wait_for('message', check=check_author)
+    reward = reward_message.content
+
+    await ctx.send("Please enter the duration of the giveaway in days:")
+    duration_message = await client.wait_for('message', check=check_author)
+    duration_days = int(duration_message.content)
+    duration_seconds = duration_days * 24 * 60 * 60  # Conversion en secondes
+
+    await ctx.send("Please enter the channel ID where the giveaway should be posted:")
+    channel_message = await client.wait_for('message', check=check_author)
+    channel_id = int(channel_message.content)
+
+    giveaway_channel = client.get_channel(channel_id)
+
+    if giveaway_channel is None:
+        await ctx.send(f"Channel with ID {channel_id} not found.")
+        return
+
+    giveaway_embed = Embed(
+        title="🎉 Giveaway! 🎉",
+        description=f"React with 🎉 to enter!\n**Reward:** {reward}\n**Duration:** {duration_days} days",
+        color=0x00ff00
+    )
+    giveaway_message = await giveaway_channel.send(embed=giveaway_embed)
+
+    await giveaway_message.add_reaction("🎉")
+
+    await asyncio.sleep(duration_seconds)
+
+    giveaway_message = await giveaway_channel.fetch_message(giveaway_message.id)
+    reaction = discord.utils.get(giveaway_message.reactions, emoji="🎉")
+
+    users = await reaction.users().flatten()
+    users = [user for user in users if not user.bot]
+
+    if len(users) == 0:
+        await ctx.send("No one participated in the giveaway.")
+        return
+
+    winner = random.choice(users)
+
+    await ctx.send(f"Congratulations {winner.mention}! You won the giveaway for **{reward}**!")
+
+
+# Commande pour reroll un giveaway
+@client.hybrid_command(description="reroll a giveaway")
+async def reroll_giveaways(ctx: commands.Context):
+    # Vérification du rôle
+    role = discord.utils.get(ctx.guild.roles, id=REQUIRED_ROLE_ID)
+    if role not in ctx.author.roles:
+        await ctx.send("You don't have the required role to reroll a giveaway.")
+        return
+
+    # Vérifier si un message de giveaway existe pour le serveur
+    if ctx.guild.id not in giveaway_messages:
+        await ctx.send("No ongoing giveaway found to reroll.")
+        return
+
+    # Récupérer le message de giveaway
+    giveaway_message_id = giveaway_messages[ctx.guild.id]
+    giveaway_message = await ctx.channel.fetch_message(giveaway_message_id)
+    reaction = discord.utils.get(giveaway_message.reactions, emoji="🎉")
+
+    users = await reaction.users().flatten()
+    users = [user for user in users if not user.bot]
+
+    if len(users) == 0:
+        await ctx.send("No one participated in the giveaway.")
+        return
+
+    # Sélection d'un nouveau gagnant
+    winner = random.choice(users)
+
+    await ctx.send(f"Congratulations {winner.mention}! You are the new winner of the rerolled giveaway!")
+
+
 @client.hybrid_command(description="Creates a new category with the specified name.")
 async def create_cc(ctx: commands.Context, category_name):
     print(f'Command /create_cc detected.')
