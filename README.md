@@ -16,6 +16,8 @@ Here is the list of available commands:
 - **raid_protect**: Activates raid protection for the specified duration.
 - **suggest**: Submits a suggestion.
 - **reboot**: Restarts the bot.
+- **shutdown**: Deactivate the bot.
+- **start giveaways**: Start an Giveaways with custom duration and reward.
 - **create_cc**: Creates a new category with the specified name.
 - **delete_cc**: Deletes a category with the specified name.
 - **uptime**: Checks the bot's uptime.
