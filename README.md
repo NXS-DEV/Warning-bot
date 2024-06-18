@@ -17,7 +17,8 @@ Here is the list of available commands:
 - **suggest**: Submits a suggestion.
 - **reboot**: Restarts the bot.
 - **shutdown**: Deactivate the bot.
-- **start giveaways**: Start an Giveaways with custom duration and reward.
+- **start_giveaways**: Start an Giveaways with custom duration and reward.
+- **reroll_giveaways**: Reroll an Giveaways already existed.
 - **create_cc**: Creates a new category with the specified name.
 - **delete_cc**: Deletes a category with the specified name.
 - **uptime**: Checks the bot's uptime.
